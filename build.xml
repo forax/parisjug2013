@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<project name="parisjug2013" default="all" basedir=".">
+	<property name="proxy-src" location="proxy/src"/>
+	<property name="proxy-classes" location="proxy/classes"/>
+	<property name="proxy-jar" value="proxy.jar"/>
+	
+  <property name="java9-src" location="java9/src"/>
+  <property name="java9-classes" location="java9/classes"/>
+	<property name="java9-jar" value="java9.jar"/>
+	<property name="asm.jar" location="lib/asm-debug-all-5.0_ALPHA.jar"/>
+	
+  <target name="all" depends="jars">
+  </target>
+	
+	<target name="compile-proxy">
+		<mkdir dir="${proxy-classes}"/>
+		<javac srcdir="${proxy-src}"
+           destdir="${proxy-classes}"
+           includeantruntime="false"
+           debug="on"
+	  />
+	</target>
+	
+	<target name="compile-java9">
+	    <mkdir dir="${java9-classes}"/>
+	    <javac srcdir="${java9-src}"
+	           destdir="${java9-classes}"
+	    	     classpath=".:${asm.jar}"
+	           includeantruntime="false"
+	           debug="on"
+	    />
+		  <java classname="java9.Rewriter"
+		        classpath="${java9-classes}:${asm.jar}"
+		  	    fork="true">
+		  	<arg value="${java9-classes}"/>
+		  </java>
+	</target>
+	
+	<target name="jar-proxy" depends="compile-proxy">
+	    <jar destfile="${proxy-jar}">
+	        <fileset dir="${proxy-classes}"/>
+	    	  <manifest>
+	    	      <attribute name="Main-Class"
+	    	                 value="proxy.Main"/>
+	    	  </manifest>
+	    </jar>
+	</target>
+	
+	<target name="jar-java9" depends="compile-java9">
+	      <jar destfile="${java9-jar}">
+	          <fileset dir="${java9-classes}"/>
+	          <manifest>
+	              <attribute name="Main-Class"
+	                         value="java9.Main"/>
+	          </manifest>
+	      </jar>
+	</target>
+	  
+	
+	<target name="jars" depends="clean, jar-proxy, jar-java9" />
+	
+	<target name="clean">
+		<delete dir="${proxy-classes}"/>
+		<delete dir="${java9-classes}"/>
+		
+		<mkdir dir="${proxy-classes}"/>
+		<mkdir dir="${java9-classes}"/>
+	</target>
+
+</project>
